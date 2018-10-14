@@ -14,82 +14,21 @@ Created on Oct 8, 2018
 import sqlite3
 import tkinter as tk
 from tkinter import ttk
+from tkinter import simpledialog
 from tkinter import scrolledtext
 from tkinter import Menu
 from tkinter import messagebox as mBox
-from tkinter import simpledialog
 import sys as sys
 # ##########################
 # Classes
 # ##########################
-
-class insertionForm(object):
-    '''
-    class insertionForm  
-    @summary: A form to collect movie data to add to list, and send to addMovietoList function. A Part of MomsMovies application
-    @see: refer to main module (MomsMovies) documentation
-    created: Oct 14, 2018
-        @
-    '''
-    def __init__(self, goal):
-        '''
-        Constructor for Add data dialog window
-        '''
-        
-        # Create instance
-        self.goal=goal
-        self.frm = tk.Tk()
-        # Add a title
-        self.frm.title("Add a Movie")
-        self.aForm()
-        self.frm.mainloop() 
-
-    def aForm(self):
-        ''' The form '''
-        lbfr = ttk.LabelFrame(self.frm, text=' Input Form ')
-        lbfr.grid(column=0, row=0, padx=10, pady=10, sticky='W')
-        self.lbl0 = tk.Label(lbfr, text="ID: ").grid(column=0, row=0)
-        self.e0 = tk.Entry(lbfr, width=4)
-        self.e0.grid(column=1, row=0, padx=5, pady=4, sticky='W')
-        self.lbl1 = tk.Label(lbfr, text="Title: ").grid(column=0, row=1)
-        self.e1 = tk.Entry(lbfr,width=50)
-        self.e1.grid(column=1, row=1, padx=5, pady=4, sticky='W')
-        self.lbl2 = tk.Label(lbfr, text="Genre: ").grid(column=0, row=2)
-        self.e2 = tk.Entry(lbfr,width=12)
-        self.e2.grid(column=1, row=2, padx=5, pady=4, sticky='W')
-        self.lbl3 = tk.Label(lbfr, text="Run Time: ").grid(column=0, row=3)
-        self.e3 = tk.Entry(lbfr,width=4)
-        self.e3.grid(column=1, row=3, padx=5, pady=4, sticky='W')
-        self.lbl4 = tk.Label(lbfr, text="Year: ").grid(column=0, row=4)
-        self.e4 = tk.Entry(lbfr,width=4)
-        self.e4.grid(column=1, row=4, padx=5, pady=4, sticky='W')
-        self.lbl5 = tk.Label(lbfr, text="Rating: ").grid(column=0, row=5)
-        self.e5 = tk.Entry(lbfr,width=5)
-        self.e5.grid(column=1, row=5, padx=5, pady=4, sticky='W')
-        self.lbl6 = tk.Label(lbfr, text="Online ID: ").grid(column=0, row=6)
-        self.e6 = tk.Entry(lbfr,width=12)
-        self.e6.grid(column=1, row=6, padx=5, pady=4, sticky='W')
-        
-        self.btn1 = ttk.Button(lbfr, text="Add", command=lambda: self.on_click()).grid(column=0,row=7,padx=8, pady=4, sticky='W')
-        self.btn2 = ttk.Button(lbfr, text="Cancel", command=lambda: self.on_cancel()).grid(column=1,row=7,padx=8, pady=4, sticky='W')
-    def on_click(self):
-        ''' the activation of the form'''
-        if self.goal=="add": print("added")
-        if self.goal=="update": print("updated")
-        print("Form closed")
-        self.frm.destroy()
-        
-    def on_cancel(self):
-        print("Cancelled action")
-        self.frm.destroy()
-        
 class MomsMovies(object):
     ''' 
-    Main class module for Movies Database Application, MomsMovies
+    Main class module for Movies Database Application
     '''
     def __init__(self):
         '''
-        Constructor for MomsMovies
+        Constructor for Mom
         '''
         # Create instance
         self.win = tk.Tk()
@@ -111,7 +50,7 @@ class MomsMovies(object):
         Create a NEW blank database if not already existing
         '''
         db = sqlite3.connect('MomsMovies.db')
-        db.execute("CREATE TABLE IF NOT EXISTS movies (MovieNumber INTEGER, MovieTitle STRING(60), Genre STRING(10), RunTime INT(4), Year DATE,Rating STRING(3), ImdbURL STRING(50))")
+        db.execute("CREATE TABLE IF NOT EXISTS movies (MovieNumber INTEGER, MovieTitle STRING(60), Genre STRING(10), RunTime INT(4), Year DATE,Rating STRING(3), OnlineId STRING(50))")
         db.close()
         
     def getAllMovies(self):
@@ -134,7 +73,7 @@ class MomsMovies(object):
         print(row)
         db = sqlite3.connect('MomsMovies.db')
         cursor = db.cursor()
-        cursor.execute('INSERT INTO movies (MovieNumber, MovieTitle, Genre, RunTime, Year, Rating, ImdbURL) VALUES (?, ?, ?, ?, ?, ?, ?)', (row[0],row[1],row[2],row[3],row[4],row[5],row[6]))
+        cursor.execute('INSERT INTO movies (MovieNumber, MovieTitle, Genre, RunTime, Year, Rating, OnlineId) VALUES (?, ?, ?, ?, ?, ?, ?)', (row[0],row[1],row[2],row[3],row[4],row[5],row[6]))
         db.commit()
         db.close()
         
@@ -195,9 +134,15 @@ class MomsMovies(object):
         '''
         Remove a movie entry
         '''
+        print(self)
         db = sqlite3.connect('MomsMovies.db')
         print("Opened database successfully")
         thisMovie = self.findMoviebyNumber(mNumber)
+        #=======================================================================
+        # print("Delete\? {}".format(thisMovie))
+        # ans = input("Do you want to go ahead? (y/n)")
+        # if ans == 'y':
+        #=======================================================================
         if mBox.askokcancel("Delete", thisMovie):
             db.execute("DELETE FROM movies WHERE movieNumber = ?", (mNumber,))
             db.commit()
@@ -208,13 +153,34 @@ class MomsMovies(object):
             print("Delete aborted . . .")
             db.close
             return
+    #===========================================================================
+    # def deleteMoviefromList(self, mNumber):
+    #     '''
+    #     Remove a movie entry
+    #     '''
+    #     db = sqlite3.connect('MomsMovies.db')
+    #     print("Opened database successfully")
+    #     thisMovie = self.findMoviebyNumber(mNumber)
+    #     print("Delete\? {}".format(thisMovie))
+    #     ans = input("Do you want to go ahead? (y/n)")
+    #     if ans == 'y':
+    #         db.execute("DELETE FROM movies WHERE movieNumber = ?", (mNumber,))
+    #         db.commit()
+    #         print("Total number of rows deleted :{}".format(db.total_changes))
+    #         print("Operation done successfully")
+    #         db.close() 
+    #     else:
+    #         print("Delete aborted . . .")
+    #         db.close
+    #         return
+    #===========================================================================
         
     def updateMovieinList(self, row):
         '''
         Edit a movie entry
         '''
         db = sqlite3.connect('MomsMovies.db')
-        db.execute("UPDATE movies SET (movieTitle = ?, Genre = ?, RunTime = ?, Year = ?, Rating = ?, ImdbURL = ?) WHERE movieNumber = ?", (row[1], row[2], row[3], row[4], row[5], row[6], row[0]))
+        db.execute("UPDATE movies SET (movieTitle = ?, Genre = ?, RunTime = ?, Year = ?, Rating = ?, OnlineId = ?) WHERE movieNumber = ?", (row[1], row[2], row[3], row[4], row[5], row[6], row[0]))
         db.commit
         print("Total number of rows updated :"), db.total_changes
         db.close()  
@@ -231,56 +197,41 @@ class MomsMovies(object):
         
     def do_showAll(self):
         listAll = self.getAllMovies()
-        print(listAll[0])
+        print(listAll)
         for row in listAll:
-            
-            self.scrolList.insert(tk.END,row[0])
-            self.scrolList.insert(tk.END,'\t')
-            mTitle = row[1]
-            titleLength = len(mTitle)+(60-len(mTitle))
-            mTitle = mTitle.ljust(titleLength)
-            self.scrolList.insert(tk.END,mTitle)
-            self.scrolList.insert(tk.END,'\t')
-            mGenre = row[2]
-            genreLength = len(row[2])+(12-len(row[2]))
-            mGenre = mGenre.ljust(genreLength)
-            self.scrolList.insert(tk.END,mGenre)
-            self.scrolList.insert(tk.END,'\t\t')
-            mRuntime = str(row[3])
-            runtimeLength = len(mRuntime)+(4-len(mRuntime))
-            mRuntime = mRuntime.ljust(runtimeLength)
-            self.scrolList.insert(tk.END,mRuntime)
-            self.scrolList.insert(tk.END,'\t\t\t')
-            self.scrolList.insert(tk.END,row[4])
-            self.scrolList.insert(tk.END,'\t\t')
-            self.scrolList.insert(tk.END,row[5])
-            self.scrolList.insert(tk.END,'\t\t\t')
-            self.scrolList.insert(tk.END,row[6])
-            self.scrolList.insert(tk.END,'\n')
+            self.scrolList.insert(tk.END, row)
         # self.scrolList.insert(tk.END, listAll)
-    def do_addMovie(self):
-        goal = "add"
-        insertionForm(goal)
-        
-    def do_updateMovie(self):
-        goal = "update"
-        insertionForm(goal)
         
     def do_delete_rec(self):
         # mNumber=input("Movie number to delete;")
         mNumber = simpledialog.askinteger("Delete Movie", "Movie Number to Delete?")
         self.deleteMoviefromList(mNumber)
         
-    def do_clearView(self):
-        self.scrolList.delete(1.0,tk.END)
-         
+    def do_addDummyRec(self):
+        ''' Add a dummy test record'''        
+        imovieNumber = 999
+        smovieTitle = 'Terrible-pan'
+        sGenre = 'AD'
+        iRunTime = 127
+        dYear = 1980
+        sRating = 'R'
+        sOnlineId = 'tt99999999'
+        row = (imovieNumber, smovieTitle, sGenre, iRunTime, dYear, sRating, sOnlineId)
+        mm.addMovietoList(row)    
+        mNumber = imovieNumber
+        movieTitle = mm.findMoviebyNumber(mNumber)
+        if movieTitle.__len__()==0:
+            print("No Records added with this ID number")
+        else: 
+            print(movieTitle)
+            
     # #####################################
     # Independent Diablogs and Pop-ups
     # #####################################
     def info(self):
         mBox.showinfo('About Mom\'s Movies, ' , 'Debby\'s Own Movie List Application\n\n (c) David A York, 2018\n http:crunches-data.appspot.com \nVersion: 0.1, development version 0.03a \nlicense: MIT')
     
-       
+        
     # #####################################
     # GUI Widgets Creation and interface methods 
     # #####################################
@@ -289,26 +240,21 @@ class MomsMovies(object):
         '''
         GUI interface creation
         '''
-        frm = ttk.Frame(self.win, width= 400, height=600)            # Create a tab
+        frm = ttk.Frame(self.win, width= 400, height=400)            # Create a tab
         frm.pack()
         
         # Creating a container frame to hold tab2 widgets ============================
-        self.list = ttk.LabelFrame(frm, text=' Movie(s) ', width=120)
+        self.list = ttk.LabelFrame(frm, text=' Movie(s) ', width=56)
         self.list.grid(column=0, row=0, padx=8, pady=4, sticky='W')
         
         self.listctl = ttk.LabelFrame(self.list, width=56)
         self.listctl.grid(column=0, row=0, padx=8, pady=4, sticky='W')
         
-        self.listView = ttk.LabelFrame(self.list, width=120)
-        self.listView.grid(column=0, row=0, padx=8, pady=4, sticky='W')
+        scrolW1  = 56; scrolH1  =  20
+        self.scrolList = scrolledtext.ScrolledText(self.list, width=scrolW1, height=scrolH1, wrap=tk.WORD)
+        self.scrolList.grid(column=0, row=6, padx=4, pady=4, sticky='WE', columnspan=3)
         
-        ttk.Label(self.listView, text="ID \t Title \t\t\t\t\t\t\t\t\t\tGenre\t\t     Run Time\tYear\tRating\t\tOnline ID (IMDB)").grid(column=0, row=0, padx=4, pady=4,sticky='W')
-        
-        scrolW1  = 120; scrolH1  =  20
-        self.scrolList = scrolledtext.ScrolledText(self.listView, width=scrolW1, height=scrolH1, wrap=tk.WORD)
-        self.scrolList.grid(column=0, row=1, padx=4, pady=4, sticky='WE', columnspan=3)
-        
-        self.action_clrlist = ttk.Button(self.listctl, text="CLEAR", command=lambda: self.do_clearView())
+        self.action_clrlist = ttk.Button(self.listctl, text="CLEAR")
         self.action_clrlist.grid(column=0, row=0, padx=4, pady=6)
         
         self.action_prtlist = ttk.Button(self.listctl, text="PRINT")
@@ -328,10 +274,10 @@ class MomsMovies(object):
 
         # Add menu items
         listMenu = Menu(menuBar, tearoff=0)
-        listMenu.add_command(label="New", command=lambda: self.createNewList())
+        listMenu.add_command(label="New")
         listMenu.add_command(label="Open")
         listMenu.add_command(label="Save")
-        listMenu.add_command(label="Copy Database")
+        listMenu.add_command(label="Copy")
         listMenu.add_separator()
         listMenu.add_command(label="Exit", command=self._quit)
         menuBar.add_cascade(label="List", menu=listMenu)
@@ -342,9 +288,10 @@ class MomsMovies(object):
         editMenu.add_command(label="Copy")
         editMenu.add_command(label="Paste")
         editMenu.add_command(label="Delete")
-        editMenu.add_command(label="Clear")
+        editMenu.add_command(label="Clear All")
         editMenu.add_command(label="Select")
         editMenu.add_separator()
+        editMenu.add_command(label="Enter")
         editMenu.add_command(label="Options")
         menuBar.add_cascade(label="Edit", menu=editMenu)
         
@@ -360,9 +307,9 @@ class MomsMovies(object):
                       
         # Add an tools Menu
         toolsMenu = Menu(menuBar, tearoff=0)
-        toolsMenu.add_command(label="Add a Movie", command=lambda: self.do_addMovie())
-        toolsMenu.add_command(label="Update a Movie", command=lambda: self.do_updateMovie())
-        toolsMenu.add_command(label="Delete a Movie", command=lambda: self.do_delete_rec())
+        toolsMenu.add_command(label="Add Movie")
+        toolsMenu.add_command(label="Add Dummy", command=lambda: self.do_addDummyRec())
+        toolsMenu.add_command(label="Delete Movie", command=lambda: self.do_delete_rec())
         toolsMenu.add_command(label="Sort")
         toolsMenu.add_separator()
         toolsMenu.add_command(label="Print Alpha")
@@ -381,4 +328,107 @@ class MomsMovies(object):
 if __name__ == '__main__':
     mm = MomsMovies()
     mm.win.mainloop()
+    # #############################
+    # TEST fetching All records
+    # #############################
+    # AllMovies = mm.getAllMovies()
+    # print(AllMovies)
     
+    # ########################################
+    # TEST record retrieval by partial title
+    # ########################################
+    #===========================================================================
+    # partialTitle = '%dog%'
+    # movieTitle = mm.findMoviebyTitle(partialTitle)
+    # if movieTitle.__len__()==0:
+    #     print("No Records with this in title")
+    # else: 
+    #     print(movieTitle)
+    #===========================================================================
+    
+    # ##################################
+    # TEST record retrieval bu number
+    # ##################################
+    #===========================================================================
+    # mNumber = 275
+    # movieTitle = mm.findMoviebyNumber(mNumber)
+    # if movieTitle.__len__()==0:
+    #     print("No Records with this ID number")
+    # else: 
+    #     print(movieTitle)
+    #===========================================================================
+    
+    ###############################
+    # TEST record addition
+    ###############################
+    # (movieNumber int, movieTitle string, Genre string, RunTime int, Year date, Rating string, OnlineId string)
+    # (int,string,string,int,date,string,string)
+    
+    #===========================================================================
+    # imovieNumber = 843
+    # smovieTitle = 'Shogun'
+    # sGenre = 'AD DR'
+    # iRunTime = 125
+    # dYear = 1980
+    # sRating = 'PG'
+    # sOnlineId = 'tt0083069'
+    # row = (imovieNumber, smovieTitle, sGenre, iRunTime, dYear, sRating, sOnlineId)
+    # mm.addMovietoList(row)    
+    # mNumber = imovieNumber
+    # movieTitle = mm.findMoviebyNumber(mNumber)
+    # if movieTitle.__len__()==0:
+    #     print("No Records added with this ID number")
+    # else: 
+    #     print(movieTitle)
+    #===========================================================================
+    
+    # ##################################
+    # TEST record retrieval bu Genre
+    # ##################################
+    
+    #===========================================================================
+    # mGenre = "AD"
+    # movieTitle = mm.findMoviesbyGenre(mGenre)
+    # if movieTitle.__len__()==0:
+    #     print("No Records for this Genre")
+    # else: 
+    #     for row in movieTitle:
+    #         print(row)
+    #===========================================================================
+    
+    # ##################################
+    # TEST record retrieval by Rating
+    # ##################################
+    
+    #===========================================================================
+    # mRating = "R"
+    # movieTitle = mm.findMoviesbyRating(mRating)
+    # if movieTitle.__len__()==0:
+    #     print("No Records for this Genre")
+    # else: 
+    #     for row in movieTitle:
+    #         print(row)
+    #===========================================================================
+    
+    #===========================================================================
+    # imovieNumber = 999
+    # smovieTitle = 'Terrible-pan'
+    # sGenre = 'AD'
+    # iRunTime = 127
+    # dYear = 1980
+    # sRating = 'R'
+    # sOnlineId = 'tt99999999'
+    # row = (imovieNumber, smovieTitle, sGenre, iRunTime, dYear, sRating, sOnlineId)
+    # mm.addMovietoList(row)    
+    # mNumber = imovieNumber
+    # movieTitle = mm.findMoviebyNumber(mNumber)
+    # if movieTitle.__len__()==0:
+    #     print("No Records added with this ID number")
+    # else: 
+    #     print(movieTitle)
+    #===========================================================================
+    
+    #===========================================================================
+    # mNumber = 999
+    # mm.deleteMoviefromList(mNumber)
+    #===========================================================================
